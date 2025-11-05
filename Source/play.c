@@ -2,7 +2,7 @@
 #define SCREEN_WIDTH    1920
 
 
-void playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacles) {
+void playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacles, int count) {
     
     int scrollSpeed = 5;
     game->text_title.x = -game->text_title.w;
@@ -11,14 +11,10 @@ void playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
     SDL_RenderCopy(game->renderer, maps->gameLoop, NULL, &game->rectBackground2);
     SDL_RenderCopy(game->renderer, maps->gameLoop, NULL, &game->rectBackground3);
 
-    SDL_RenderCopy(game->renderer, obstacles[0].pipeDown, NULL, &obstacles[0].rectDown);
-    SDL_RenderCopy(game->renderer, obstacles[0].pipeUp, NULL, &obstacles[0].rectUp);
-
-    SDL_RenderCopy(game->renderer, obstacles[1].pipeDown, NULL, &obstacles[1].rectDown);
-    SDL_RenderCopy(game->renderer, obstacles[1].pipeUp, NULL, &obstacles[1].rectUp);
-
-    SDL_RenderCopy(game->renderer, obstacles[2].pipeDown, NULL, &obstacles[2].rectDown);
-    SDL_RenderCopy(game->renderer, obstacles[2].pipeUp, NULL, &obstacles[2].rectUp);
+    for (struct pipePair* it = obstacles; it < obstacles + count; it++) {
+        SDL_RenderCopy(game->renderer, it->pipeDown, NULL, &it->rectDown);
+        SDL_RenderCopy(game->renderer, it->pipeUp, NULL, &it->rectUp);  
+    }
     
     game->rectBackground2.x -= scrollSpeed;
     game->rectBackground3.x -= scrollSpeed;
@@ -54,10 +50,4 @@ void playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
         obstacles[1].rectDown.x = 5/4 * SCREEN_WIDTH;
         obstacles[1].rectUp.x = 5/4 * SCREEN_WIDTH;
     }
-
-    /*
-    To do:
-    make substitute pipepairs for each obstacle's expiration. After obstacle's disapearance, pick random obstacle from
-    certain pipepair position and place it there.
-    */ 
 }

@@ -2,4 +2,4 @@
 #include "../Headers/maps.h"
 #include "../Headers/pipe.h"
 
-void playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacles);
+void playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacles, int count);

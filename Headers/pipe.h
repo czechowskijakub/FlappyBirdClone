@@ -11,6 +11,5 @@ struct pipePair {
 };
 
 
-void buildPipes(struct Game* game, struct pipePair* obstacles);
-void movePipes(struct Game* game);
+void buildPipes(struct Game* game, struct pipePair* obstacles, int count);
 int scaleHeight(int image_x, int image_y);

@@ -7,8 +7,8 @@
 #define SCREEN_HEIGHT   1080
 #define IMAGE_FLAGS     IMG_INIT_PNG
 #define TEXT_SIZE       50
-#define PIPE_WIDTH      100
-#define PIPE_HEIGHT     200
+#define PIPE_WIDTH      200
+#define PIPE_HEIGHT     800
 
 struct pipePair {
     SDL_Rect rectUp;
@@ -22,43 +22,26 @@ int scaleHeight(int image_x, int image_y) {
     return image_y * 100 / image_x;
 }
 
-void buildPipes(struct Game* game, struct pipePair* obstacles) {
+void buildPipes(struct Game* game, struct pipePair* obstacles, int count) {
 
-    int ob2_fill = 554;
+    for (struct pipePair* it = obstacles; it < obstacles + count; it++) {
+        it->pipeUp = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Up_2.png");
+        it->pipeDown = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Down_2.png");
 
-    obstacles[0].pipeUp = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Up.png");
-    obstacles[0].pipeDown = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Down.png");
-
-    obstacles[1].pipeUp = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Up_2.png");
-    obstacles[1].pipeDown = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Down_2.png");
-
-    obstacles[2].pipeUp = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Up_3.png");
-    obstacles[2].pipeDown = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Down_3.png");
-    /*
-    int i = 0;
-    while (obstacles != NULL) {
-        obstacles[i].pipeUp = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Obstacle.png");
-        obstacles[i].pipeDown = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Obstacle_UpDown.png");
-        i++;
-    }*/
-    if (!obstacles[0].pipeUp || !obstacles[0].pipeDown) {
-        fprintf(stderr, "<< TEXTURE NOT LOADED: %s >>", IMG_GetError());
+        if (!it->pipeUp || !it->pipeDown) {
+            fprintf(stderr, "<< TEXTURE NOT LOADED: %s >>", IMG_GetError());
+            break;
+        }
     }
+    
+    int spriteOffset = 120;
+    obstacles[0].rectUp = (SDL_Rect){(SCREEN_WIDTH * 5/4), (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};      // by subtracting from PIPE_HEIGHT, we push the pipe from the top upwards, so we just offset it up
+    obstacles[0].rectDown = (SDL_Rect){(SCREEN_WIDTH * 5/4), -spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};                                                     // by reversing, we push the pipe from the top downwards, so we just offset it down
 
-    obstacles[0].rectUp = (SDL_Rect){(SCREEN_WIDTH * 5/4), (SCREEN_HEIGHT - PIPE_HEIGHT), PIPE_WIDTH, PIPE_HEIGHT};
-    obstacles[0].rectDown = (SDL_Rect){(SCREEN_WIDTH * 5/4), 0, PIPE_WIDTH, scaleHeight(786, 2366)};
+    obstacles[1].rectUp = (SDL_Rect){(SCREEN_WIDTH * 7/4), (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT + 400 - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};
+    obstacles[1].rectDown = (SDL_Rect){(SCREEN_WIDTH * 7/4), -400 - spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};
 
-    obstacles[1].rectUp = (SDL_Rect){(SCREEN_WIDTH * 7/4), (SCREEN_HEIGHT - 554), PIPE_WIDTH, 554};
-    obstacles[1].rectDown = (SDL_Rect){(SCREEN_WIDTH * 7/4), 0, PIPE_WIDTH, scaleHeight(786, 648)};
+    obstacles[2].rectUp = (SDL_Rect){(SCREEN_WIDTH * 9/4), (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT + 200 - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};
+    obstacles[2].rectDown = (SDL_Rect){(SCREEN_WIDTH * 9/4), -200 - spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};
 
-    obstacles[2].rectUp = (SDL_Rect){(SCREEN_WIDTH * 9/4), (SCREEN_HEIGHT - PIPE_HEIGHT), PIPE_WIDTH, PIPE_HEIGHT};
-    obstacles[2].rectDown = (SDL_Rect){(SCREEN_WIDTH * 9/4), 0, PIPE_WIDTH, (854 - PIPE_HEIGHT)};
-
-}
-
-void movePipes(struct Game* game) {
-    SDL_RenderCopy(game->renderer, game->pipeTextureDown, NULL, &game->pipeRectDown);
-    SDL_RenderCopy(game->renderer, game->pipeTextureUp, NULL, &game->pipeRectUp);
-    game->pipeRectDown.x -= 5;
-    game->pipeRectUp.x -= 5;
 }

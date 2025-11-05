@@ -40,9 +40,9 @@ void gameLoop() {
         maps.gameLoop = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
         maps.gameLoop2 = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
     };
-    
-    struct pipePair obstacles[3];
-    buildPipes(&game, obstacles);
+    int count = 3;
+    struct pipePair obstacles[count];
+    buildPipes(&game, obstacles, count);
 
     game.background = maps.gameMenu;
     game.displayRect = (SDL_Rect){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
@@ -105,7 +105,7 @@ void gameLoop() {
         }
         
         if (currentState == STATE_PLAYING) {
-            playGame(&game, &maps, obstacles);
+            playGame(&game, &maps, obstacles, count);
         }
 
         SDL_RenderCopy(game.renderer, game.text_image, NULL, &game.text_title);
