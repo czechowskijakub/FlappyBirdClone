@@ -1,5 +1,5 @@
 #include "../Headers/randomizer.h"
 
-int randomNo() {
-    return rand() % 255;
+int randomNo(int upperBound) {
+    return rand() % upperBound;
 }

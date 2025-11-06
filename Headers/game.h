@@ -1,3 +1,4 @@
+#pragma once
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
@@ -7,6 +8,7 @@
 #include "../Headers/renderer.h"
 #include "../Headers/maps.h"
 #include "../Headers/randomizer.h"
+#include "../Headers/bird.h"
 
 enum GameState {
     STATE_MAIN_MENU,

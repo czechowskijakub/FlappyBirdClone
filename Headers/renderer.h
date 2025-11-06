@@ -37,7 +37,7 @@ bool SDL_Initialize(struct Game* game);
 SDL_Window* loadWindow(struct Game* game);
 SDL_Renderer* loadRenderer(struct Game* game);
 SDL_Texture* loadBackground(struct Game* game, const char* imageTitle);
-bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize);
+bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y);
 void gameCleanup(struct Game* game, int exitStatus);
 
 #endif

@@ -47,24 +47,23 @@ void gameLoop() {
     game.background = maps.gameMenu;
     game.displayRect = (SDL_Rect){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
-    int xStart = 0, yStart = 0;
-    game.rectBackground = (SDL_Rect){xStart, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-    game.rectBackground2 = (SDL_Rect){game.rectBackground.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-    game.rectBackground3 = (SDL_Rect){game.rectBackground.w + game.rectBackground2.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-
-    if (loadFontAndText(&game, "Floppy Burd", game.text_color, 50)) {
+    if (loadFontAndText(&game, "Floppy Burd", game.text_color, 50, (SCREEN_WIDTH / 2), 100)) {
         gameCleanup(&game, EXIT_FAILURE);
     }
 
-    static enum GameState currentState = STATE_MAIN_MENU;
+    //if (loadFontAndText(&game, "press enter", game.text_color, 15, (SCREEN_WIDTH / 2), (SCREEN_HEIGHT - 100))) {
+    //    gameCleanup(&game, EXIT_FAILURE);
+    //}
 
+    static enum GameState currentState = STATE_MAIN_MENU;
+    struct Bird bird;
+    buildBird(&game, &bird);
+
+    resetGame(&game, obstacles, count, &bird);
+
+    int xStart = 0, yStart = 0;
     while (true) {
         SDL_Event event;
-        
-        Uint8 r = randomNo();
-        Uint8 g = randomNo();
-        Uint8 b = randomNo();
-
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
@@ -72,10 +71,10 @@ void gameLoop() {
                 break;
             case SDL_KEYDOWN:
                 switch (event.key.keysym.scancode) {
-                case SDL_SCANCODE_B:
+                case SDL_SCANCODE_RETURN:
                     currentState = STATE_PLAYING;
                     break;
-                case SDL_SCANCODE_C:
+                case SDL_SCANCODE_I:
                     currentState = STATE_MAIN_MENU;
                     game.rectBackground = (SDL_Rect){xStart, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
                     game.rectBackground2 = (SDL_Rect){game.rectBackground.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
@@ -85,6 +84,7 @@ void gameLoop() {
                     gameCleanup(&game, EXIT_SUCCESS);
                     break;
                 case SDL_SCANCODE_SPACE:
+                    birdJump(&bird);
                     break;
                 default:
                     break;
@@ -101,11 +101,13 @@ void gameLoop() {
         if (currentState == STATE_MAIN_MENU) {
             game.text_title.x = (SCREEN_WIDTH - game.text_title.w) / 2;
             displayMainMenu(&game);
-            
+            resetGame(&game, obstacles, count, &bird);
         }
         
         if (currentState == STATE_PLAYING) {
-            playGame(&game, &maps, obstacles, count);
+            if (!playGame(&game, &maps, obstacles, count, &bird, &event)) {
+                currentState = STATE_MAIN_MENU;
+            }
         }
 
         SDL_RenderCopy(game.renderer, game.text_image, NULL, &game.text_title);

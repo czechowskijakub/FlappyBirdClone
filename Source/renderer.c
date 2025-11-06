@@ -68,7 +68,7 @@ SDL_Texture* loadBackground(struct Game* game, const char* imageTitle) {
     return background;
 }
 
-bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize) {
+bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y) {
     game->textFont = TTF_OpenFont("fonts/Returns.ttf", textSize);
     if (!game->textFont) {
         fprintf(stderr, "<< FONT DID NOT LOAD PROPERLY: %s >>\n", TTF_GetError());
@@ -85,7 +85,8 @@ bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int t
     game->text_title.h = surface->h;
     game->text_image = SDL_CreateTextureFromSurface(game->renderer, surface);
     SDL_FreeSurface(surface);
-    game->text_title.x = (SCREEN_WIDTH - game->text_title.w) / 2;
+    game->text_title.x = x;
+    game->text_title.x = y;
 
     if (!game->text_image) {
         fprintf(stderr, "<< TEXT IMAGE DID NOT LOAD PROPERLY: %s >>.\n", SDL_GetError());
