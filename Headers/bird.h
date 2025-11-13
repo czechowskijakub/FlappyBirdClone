@@ -10,3 +10,4 @@ struct Bird {
 
 void buildBird(struct Game* game, struct Bird* bird);
 void birdJump(struct Bird* bird);
+void birdFall(struct Bird* bird);

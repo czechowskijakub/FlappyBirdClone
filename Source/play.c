@@ -20,11 +20,8 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
     }
 
     SDL_RenderCopy(game->renderer, bird->texture, NULL, &bird->canvas);
-    float gravity = 0.5f;
-    bird->fallSpeed += gravity;
-    bird->canvas.y += (int)(bird->fallSpeed);
+    birdFall(bird);
     
-    // collision for horizontal borders
     if (bird->canvas.y + bird->canvas.h >= SCREEN_HEIGHT) { return false; }
     if (bird->canvas.y <= 0) { return false; }
 
@@ -51,7 +48,6 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
     if (obstacles[2].rectDown.x + obstacles[0].rectDown.w <= 0) {
         obstacles[2].rectDown.x = 5/4 * SCREEN_WIDTH;
         obstacles[2].rectUp.x = 5/4 * SCREEN_WIDTH;
-        
     }
 
     if (obstacles[1].rectDown.x + obstacles[1].rectDown.w <= 0) {
@@ -67,7 +63,7 @@ void resetGame(struct Game* game, struct pipePair* obstacles, int count, struct 
     game->rectBackground = (SDL_Rect){xStart, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
     game->rectBackground2 = (SDL_Rect){game->rectBackground.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
     game->rectBackground3 = (SDL_Rect){game->rectBackground.w + game->rectBackground2.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-
+    
     int spriteOffset = 120;
     obstacles[0].rectUp = (SDL_Rect){(SCREEN_WIDTH * 5/4), (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};      // by subtracting from PIPE_HEIGHT, we push the pipe from the top upwards, so we just offset it up
     obstacles[0].rectDown = (SDL_Rect){(SCREEN_WIDTH * 5/4), -spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};                                                     // by reversing, we push the pipe from the top downwards, so we just offset it down

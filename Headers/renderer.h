@@ -18,8 +18,12 @@ struct Game {
     SDL_Color text_color;
     SDL_Rect text_title;
     SDL_Texture* text_image;
+    
     int text_xVel;
     int text_yVel;
+
+    SDL_Rect text_enter;
+    SDL_Texture* text_canvas;
 
     SDL_Rect rectBackground;
     SDL_Rect rectBackground2;
@@ -39,5 +43,6 @@ SDL_Renderer* loadRenderer(struct Game* game);
 SDL_Texture* loadBackground(struct Game* game, const char* imageTitle);
 bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y);
 void gameCleanup(struct Game* game, int exitStatus);
+bool loadInstructions(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y);
 
 #endif

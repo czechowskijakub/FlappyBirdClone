@@ -20,6 +20,9 @@ void gameLoop() {
         .text_xVel = 3,
         .text_yVel = 3,
 
+        .text_enter = {0, 0, 0, 0},
+        .text_canvas = NULL,
+
         .pipeTextureUp = NULL,
         .pipeTextureDown = NULL,
         .pipeRectUp = {0, 0, 0, 0},
@@ -51,9 +54,9 @@ void gameLoop() {
         gameCleanup(&game, EXIT_FAILURE);
     }
 
-    //if (loadFontAndText(&game, "press enter", game.text_color, 15, (SCREEN_WIDTH / 2), (SCREEN_HEIGHT - 100))) {
-    //    gameCleanup(&game, EXIT_FAILURE);
-    //}
+    if (loadInstructions(&game, "press enter", game.text_color, 15, (SCREEN_WIDTH / 2), (SCREEN_HEIGHT - 400))) {
+        gameCleanup(&game, EXIT_FAILURE);
+    }
 
     static enum GameState currentState = STATE_MAIN_MENU;
     struct Bird bird;
@@ -99,7 +102,6 @@ void gameLoop() {
         SDL_RenderCopy(game.renderer, game.background, NULL, NULL);
 
         if (currentState == STATE_MAIN_MENU) {
-            game.text_title.x = (SCREEN_WIDTH - game.text_title.w) / 2;
             displayMainMenu(&game);
             resetGame(&game, obstacles, count, &bird);
         }

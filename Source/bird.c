@@ -22,3 +22,9 @@ void buildBird(struct Game* game, struct Bird* bird) {
 void birdJump(struct Bird* bird) {
     bird->fallSpeed = -10.f;
 }
+
+void birdFall(struct Bird* bird) {
+    float gravity = 0.5f;
+    bird->fallSpeed += gravity;
+    bird->canvas.y += bird->fallSpeed;
+}

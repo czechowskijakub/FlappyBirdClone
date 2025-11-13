@@ -85,10 +85,38 @@ bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int t
     game->text_title.h = surface->h;
     game->text_image = SDL_CreateTextureFromSurface(game->renderer, surface);
     SDL_FreeSurface(surface);
-    game->text_title.x = x;
-    game->text_title.x = y;
+    game->text_title.x = x - game->text_title.w / 2;
+    game->text_title.y = y;
 
     if (!game->text_image) {
+        fprintf(stderr, "<< TEXT IMAGE DID NOT LOAD PROPERLY: %s >>.\n", SDL_GetError());
+        return true;
+    }
+
+    return false;
+}
+
+bool loadInstructions(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y) {
+    game->textFont = TTF_OpenFont("fonts/Returns.ttf", textSize);
+    if (!game->textFont) {
+        fprintf(stderr, "<< FONT DID NOT LOAD PROPERLY: %s >>\n", TTF_GetError());
+        return true;
+    }
+
+    SDL_Surface* surface = TTF_RenderText_Blended(game->textFont, text, color);
+    if (!surface) {
+        fprintf(stderr, "<< SURFACE DID NOT LOAD PROPERLY: %s >>\n", SDL_GetError());
+        return true;
+    }
+
+    game->text_enter.w = surface->w;
+    game->text_enter.h = surface->h;
+    game->text_canvas = SDL_CreateTextureFromSurface(game->renderer, surface);
+    SDL_FreeSurface(surface);
+    game->text_enter.x = x - game->text_enter.w / 2;
+    game->text_enter.y = y;
+
+    if (!game->text_canvas) {
         fprintf(stderr, "<< TEXT IMAGE DID NOT LOAD PROPERLY: %s >>.\n", SDL_GetError());
         return true;
     }
