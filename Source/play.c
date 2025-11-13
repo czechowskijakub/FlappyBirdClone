@@ -1,5 +1,6 @@
 #include "../Headers/play.h"
 #include "../Headers/bird.h"
+#include "../Headers/randomizer.h"
 #define SCREEN_WIDTH    1920
 #define SCREEN_HEIGHT   1080
 #define PIPE_WIDTH      200
@@ -45,7 +46,16 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
         game->rectBackground3.x = game->rectBackground2.x + game->rectBackground2.w;
     }
 
-    if (obstacles[2].rectDown.x + obstacles[0].rectDown.w <= 0) {
+    for (struct pipePair* it = obstacles; it < obstacles + count; it++) {
+        int spriteOffset = 120;
+        if (it->rectDown.x + it->rectDown.w <= 0) {
+            int randomHeight = randomNo(600);
+            it->rectUp = (SDL_Rect){(SCREEN_WIDTH * 5) / 4, (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT + randomHeight - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};      // by subtracting from PIPE_HEIGHT, we push the pipe from the top upwards, so we just offset it up
+            it->rectDown = (SDL_Rect){(SCREEN_WIDTH * 5) / 4, -randomHeight -spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};    
+        }
+    }
+    /*
+    if (obstacles[2].rectDown.x + obstacles[2].rectDown.w <= 0) {
         obstacles[2].rectDown.x = 5/4 * SCREEN_WIDTH;
         obstacles[2].rectUp.x = 5/4 * SCREEN_WIDTH;
     }
@@ -54,6 +64,7 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
         obstacles[1].rectDown.x = 5/4 * SCREEN_WIDTH;
         obstacles[1].rectUp.x = 5/4 * SCREEN_WIDTH;
     }
+    */
     return true;
 }
 
