@@ -123,3 +123,24 @@ bool loadInstructions(struct Game* game, const char* text, SDL_Color color, int 
 
     return false;
 }
+
+SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, SDL_Rect* rectOut) {
+    SDL_Surface* surface = TTF_RenderText_Blended(font, text, color);
+     if (!surface) {
+        fprintf(stderr, "<< SURFACE ERROR: %s >>\n", TTF_GetError());
+        return NULL;
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (!texture) {
+        fprintf(stderr, "<< TEXTURE ERROR: %s >>\n", SDL_GetError());
+        SDL_FreeSurface(surface);
+        return NULL;
+    }
+
+    rectOut->w = surface->w;
+    rectOut->h = surface->h;
+
+    SDL_FreeSurface(surface);
+    return texture;
+}

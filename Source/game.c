@@ -27,6 +27,10 @@ void gameLoop() {
         .pipeTextureDown = NULL,
         .pipeRectUp = {0, 0, 0, 0},
         .pipeRectDown = {0, 0, 0, 0},
+
+        .score = 0,
+        .scoreTexture = NULL,
+        .scoreRect = {20, 20, 0, 0}
     };
 
     if (SDL_Initialize(&game)) {
@@ -43,6 +47,7 @@ void gameLoop() {
         maps.gameLoop = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
         maps.gameLoop2 = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
     };
+
     int count = 3;
     struct pipePair obstacles[count];
     buildPipes(&game, obstacles, count);
@@ -104,12 +109,14 @@ void gameLoop() {
         if (currentState == STATE_MAIN_MENU) {
             displayMainMenu(&game);
             resetGame(&game, obstacles, count, &bird);
+            game.score = 0;
         }
         
         if (currentState == STATE_PLAYING) {
             if (!playGame(&game, &maps, obstacles, count, &bird, &event)) {
                 currentState = STATE_MAIN_MENU;
             }
+            updateScore(&game);
         }
 
         SDL_RenderCopy(game.renderer, game.text_image, NULL, &game.text_title);

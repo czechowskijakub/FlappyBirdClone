@@ -35,6 +35,9 @@ struct Game {
     SDL_Rect pipeRectUp;
     SDL_Rect pipeRectDown;
 
+    unsigned score;
+    SDL_Texture* scoreTexture;
+    SDL_Rect scoreRect;
 };
 
 bool SDL_Initialize(struct Game* game);
@@ -44,5 +47,6 @@ SDL_Texture* loadBackground(struct Game* game, const char* imageTitle);
 bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y);
 void gameCleanup(struct Game* game, int exitStatus);
 bool loadInstructions(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y);
+SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, SDL_Rect* rectOut);
 
 #endif
