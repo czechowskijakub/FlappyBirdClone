@@ -1,8 +1,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
-#include "../Headers/game.h"
 #include "../Headers/bird.h"
+#include "../Headers/game.h"
+#include "../Headers/renderer.h"
 #define SCREEN_WIDTH    1920
 #define SCREEN_HEIGHT   1080
 

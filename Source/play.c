@@ -1,6 +1,7 @@
 #include "../Headers/play.h"
 #include "../Headers/bird.h"
 #include "../Headers/randomizer.h"
+#include "../Headers/sfx.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -147,6 +148,7 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
 
     for (short i = 0; i < count; i++) {
         if (bird->canvas.x + bird->canvas.w >= obstacles[i].rectDown.x + (obstacles[i].rectDown.w / 2) && !obstacles[i].isPassed) {
+            playScoreSFX();
             game->score++;
             obstacles[i].isPassed = true;
         }
@@ -216,3 +218,8 @@ void resetGame(struct Game* game, struct pipePair* obstacles, int count, struct 
     game->score = 0;
     game->overScoreRect.y = cW + 250;
 }
+
+/*
+to do:
+refactor the code, make it more modular, encapsulate with functions
+*/

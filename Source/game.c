@@ -1,4 +1,12 @@
 #include "../Headers/game.h"
+#include "../Headers/main_menu.h"
+#include "../Headers/pipe.h"
+#include "../Headers/play.h"
+#include "../Headers/renderer.h"
+#include "../Headers/maps.h"
+#include "../Headers/randomizer.h"
+#include "../Headers/bird.h"
+#include "../Headers/sfx.h"
 #define SCREEN_WIDTH    1920
 #define SCREEN_HEIGHT   1080
 
@@ -52,6 +60,13 @@ void gameLoop() {
     if (SDL_Initialize(&game)) {
         gameCleanup(&game, EXIT_FAILURE);
     }
+
+    if (initAudio()) {
+        quitAudio();
+    }
+
+    playBGMusic();
+
     loadHighScore(&game);
     Uint32 lastTick = SDL_GetTicks();
     float deltaTime;
@@ -152,4 +167,5 @@ void gameLoop() {
 
         SDL_Delay(16);
     }
+    quitAudio();
 }
