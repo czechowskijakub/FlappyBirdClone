@@ -29,15 +29,27 @@ void gameLoop() {
         .pipeRectDown = {0, 0, 0, 0},
 
         .score = 0,
+        .scoreFont = NULL,
         .scoreTexture = NULL,
-        .scoreRect = {20, 20, 0, 0}
+        .scoreRect = (SDL_Rect){20, 20, 0, 0},
+
+        .overTexture = NULL,
+        .overRect = (SDL_Rect){0, 0, 0, 0},
+
+        .overCanvas = NULL,
+        .overCanvasRect = (SDL_Rect){0, 0, 0, 0},
+        
+        .overScore = NULL,
+        .overScoreRect = (SDL_Rect){0, 0, 0, 0},
+        .isInit = false,
     };
 
     if (SDL_Initialize(&game)) {
         gameCleanup(&game, EXIT_FAILURE);
     }
+
+    game.scoreFont = TTF_OpenFont("fonts/Returns.ttf", 50);
     
-    // instantiate one window and renderer; so we can easily swap backgrounds
     loadWindow(&game);
     loadRenderer(&game);
 
@@ -45,7 +57,6 @@ void gameLoop() {
         maps.gameMenu = loadBackground(&game, "maps/BG_Flappy_Start.png"),
         maps.gameStart = loadBackground(&game, "maps/BG_Flappy_Start.png"),
         maps.gameLoop = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
-        maps.gameLoop2 = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
     };
 
     int count = 3;
@@ -55,7 +66,7 @@ void gameLoop() {
     game.background = maps.gameMenu;
     game.displayRect = (SDL_Rect){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
-    if (loadFontAndText(&game, "Floppy Burd", game.text_color, 50, (SCREEN_WIDTH / 2), 100)) {
+    if (loadFontAndText(&game, "Flappy Burd", game.text_color, 50, (SCREEN_WIDTH / 2), 100)) {
         gameCleanup(&game, EXIT_FAILURE);
     }
 
@@ -80,13 +91,13 @@ void gameLoop() {
             case SDL_KEYDOWN:
                 switch (event.key.keysym.scancode) {
                 case SDL_SCANCODE_RETURN:
-                    currentState = STATE_PLAYING;
-                    break;
-                case SDL_SCANCODE_I:
-                    currentState = STATE_MAIN_MENU;
-                    game.rectBackground = (SDL_Rect){xStart, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-                    game.rectBackground2 = (SDL_Rect){game.rectBackground.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-                    game.rectBackground3 = (SDL_Rect){game.rectBackground.w + game.rectBackground2.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
+                    if (currentState == STATE_MAIN_MENU) {
+                        currentState = STATE_PLAYING;
+                    } else if (currentState == STATE_GAME_OVER) {
+                        resetGame(&game, obstacles, count, &bird);
+                        gameOver(&game);
+                        currentState = STATE_PLAYING;
+                    }
                     break;
                 case SDL_SCANCODE_ESCAPE:
                     gameCleanup(&game, EXIT_SUCCESS);
@@ -103,20 +114,23 @@ void gameLoop() {
         }
 
         SDL_RenderClear(game.renderer);
-
         SDL_RenderCopy(game.renderer, game.background, NULL, NULL);
 
         if (currentState == STATE_MAIN_MENU) {
             displayMainMenu(&game);
             resetGame(&game, obstacles, count, &bird);
-            game.score = 0;
         }
         
         if (currentState == STATE_PLAYING) {
             if (!playGame(&game, &maps, obstacles, count, &bird, &event)) {
-                currentState = STATE_MAIN_MENU;
+                gameOver(&game);
+                currentState = STATE_GAME_OVER;
             }
             updateScore(&game);
+        }
+
+        if (currentState == STATE_GAME_OVER) {
+            overDown(&game);
         }
 
         SDL_RenderCopy(game.renderer, game.text_image, NULL, &game.text_title);

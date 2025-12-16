@@ -3,7 +3,9 @@
 #include "../Headers/pipe.h"
 #include "../Headers/bird.h"
 
-bool checkCollision(SDL_Rect a, SDL_Rect b);
+void gameOver(struct Game* game);
+void overDown(struct Game* game);
+bool checkCollision(SDL_Rect* a, SDL_Rect* b);
 bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacles, int count, struct Bird* bird, SDL_Event* event);
 void resetGame(struct Game* game, struct pipePair* obstacles, int count, struct Bird* bird);
 void updateScore(struct Game* game);

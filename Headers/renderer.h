@@ -36,8 +36,18 @@ struct Game {
     SDL_Rect pipeRectDown;
 
     unsigned score;
+    TTF_Font* scoreFont;
     SDL_Texture* scoreTexture;
     SDL_Rect scoreRect;
+
+    SDL_Texture* overTexture;
+    SDL_Rect overRect;
+
+    SDL_Texture* overCanvas;
+    SDL_Rect overCanvasRect;
+    SDL_Texture* overScore;
+    SDL_Rect overScoreRect;
+    bool isInit;
 };
 
 bool SDL_Initialize(struct Game* game);

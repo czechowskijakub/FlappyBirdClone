@@ -1,33 +1,78 @@
 #include "../Headers/play.h"
 #include "../Headers/bird.h"
 #include "../Headers/randomizer.h"
+#include <unistd.h>
+
 #define SCREEN_WIDTH    1920
 #define SCREEN_HEIGHT   1080
 #define PIPE_WIDTH      200
 #define PIPE_HEIGHT     800
 #define START_POS       800
+#define cW              600
+#define cH              600
 
-void updateScore(struct Game* game) {
-    char buffer[32];
-        sprintf(buffer, "%d", game->score);
-
-        if (game->scoreTexture) {
-            SDL_DestroyTexture(game->scoreTexture);
-        }
-
-        game->scoreTexture = renderText(game->renderer, game->textFont, buffer, (SDL_Color){255, 255, 255, 255}, &game->scoreRect);
-
-        game->scoreRect.x = 40;
-        game->scoreRect.y = 40;
-
-        SDL_RenderCopy(game->renderer, game->scoreTexture, NULL, &game->scoreRect);
+void overDown(struct Game* game) {
+    if (game->overCanvasRect.y < 250 && game->isInit) {
+        game->overCanvasRect.y += 13;
+        game->overRect.y += 13;
+        game->overScoreRect.y += 13;
+    }
+    
+    SDL_RenderCopy(game->renderer, game->overCanvas, NULL,&game->overCanvasRect);
+    SDL_RenderCopy(game->renderer, game->overTexture, NULL, &game->overRect);
+    SDL_RenderCopy(game->renderer, game->overScore, NULL, &game->overScoreRect);
 }
 
-bool checkCollision(SDL_Rect a, SDL_Rect b) {
-    return (a.x + a.w > b.x &&
-            a.x < b.x + b.w &&
-            a.y + a.h > b.y &&
-            a.y < b.y + b.h
+void gameOver(struct Game* game) {
+    SDL_Color color = {217, 242, 94};
+    char over[] = "game over";
+    TTF_Font* overFont = TTF_OpenFont("fonts/Returns.ttf", 30);
+
+    game->overCanvas = IMG_LoadTexture(game->renderer, "images/game_over/game_over.png");
+    if (!game->overCanvas) {
+        printf("<<< ERR UPLOADING TEXTURE: %s >>>", IMG_GetError());
+    }
+    game->overCanvasRect = (SDL_Rect){(SCREEN_WIDTH / 2) - (cW / 2), -cH, cW, cH};
+
+    // text
+    if (game->overTexture) {
+        SDL_DestroyTexture(game->overTexture);
+    }
+    game->overTexture = renderText(game->renderer, overFont, over, color, &game->overRect);
+
+    game->overRect.x = ((SCREEN_WIDTH / 2) - (game->overRect.w / 2));
+    game->overRect.y = -cH + 150;
+
+    char buffer[16];
+    sprintf(buffer, "score: %d", game->score);
+    game->overScore = renderText(game->renderer, overFont, buffer, color, &game->overScoreRect);
+
+    game->overScoreRect.x = ((SCREEN_WIDTH / 2) - (game->overScoreRect.w / 2));
+    game->overScoreRect.y = -cH + 250;
+
+    game->isInit = true;
+}
+
+void updateScore(struct Game* game) {
+    char buffer[16];
+    sprintf(buffer, "score: %d", game->score);
+
+    if (game->scoreTexture) {
+        SDL_DestroyTexture(game->scoreTexture);
+    }
+    game->scoreTexture = renderText(game->renderer, game->scoreFont, buffer, game->text_color, &game->scoreRect);
+
+    game->scoreRect.x = 40;
+    game->scoreRect.y = 40;
+
+    SDL_RenderCopy(game->renderer, game->scoreTexture, NULL, &game->scoreRect);
+}
+
+bool checkCollision(SDL_Rect* a, SDL_Rect* b) {
+    return (a->x + a->w > b->x &&
+            a->x < b->x + b->w &&
+            a->y + a->h > b->y &&
+            a->y < b->y + b->h
         );
 }
 
@@ -52,7 +97,7 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
     if (bird->canvas.y + bird->canvas.h >= SCREEN_HEIGHT) { return false; }
     if (bird->canvas.y <= 0) { return false; }
     for (short i = 0; i < count; i++) {
-        if (checkCollision(bird->canvas, obstacles[i].rectDown) || checkCollision(bird->canvas, obstacles[i].rectUp)) {
+        if (checkCollision(&bird->canvas, &obstacles[i].rectDown) || checkCollision(&bird->canvas, &obstacles[i].rectUp)) {
             return false;
         }
     }
@@ -125,4 +170,6 @@ void resetGame(struct Game* game, struct pipePair* obstacles, int count, struct 
     short spriteHeight = 60;
     bird->canvas.y = (SCREEN_HEIGHT / 2) - spriteHeight;
     bird->fallSpeed = 1.f;
+    game->score = 0;
+    game->overScoreRect.y = cW + 250;
 }
