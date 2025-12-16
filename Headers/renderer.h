@@ -10,6 +10,7 @@
 #include <time.h>
 
 struct Game {
+    FILE* file;
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* background;
@@ -36,6 +37,7 @@ struct Game {
     SDL_Rect pipeRectDown;
 
     unsigned score;
+    unsigned best;
     TTF_Font* scoreFont;
     SDL_Texture* scoreTexture;
     SDL_Rect scoreRect;
@@ -47,6 +49,10 @@ struct Game {
     SDL_Rect overCanvasRect;
     SDL_Texture* overScore;
     SDL_Rect overScoreRect;
+
+    SDL_Texture* highScore;
+    SDL_Rect highScoreCanvas;
+
     bool isInit;
 };
 

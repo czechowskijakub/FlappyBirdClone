@@ -2,6 +2,8 @@
 #include "../Headers/bird.h"
 #include "../Headers/randomizer.h"
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define SCREEN_WIDTH    1920
 #define SCREEN_HEIGHT   1080
@@ -11,21 +13,48 @@
 #define cW              600
 #define cH              600
 
+void loadHighScore(struct Game* game) {
+    game->file = fopen(".highscore.txt", "r");
+    if (game->file == NULL) {
+        game->best = 0;
+        return;
+    }
+
+    if (fscanf(game->file, "%u", &game->best) != 1) {
+        game->best = 0;
+    }
+
+    fclose(game->file);
+}
+
+void saveHighScore(struct Game* game) {
+    game->file = fopen(".highscore.txt", "w");
+    if (game->file == NULL) {
+        printf("Nie można zapisać pliku highscore.txt\n");
+        return;
+    }
+
+    fprintf(game->file, "%u\n", game->best);
+    fclose(game->file);
+}
+
+
 void overDown(struct Game* game) {
     if (game->overCanvasRect.y < 250 && game->isInit) {
         game->overCanvasRect.y += 13;
         game->overRect.y += 13;
         game->overScoreRect.y += 13;
+        game->highScoreCanvas.y += 13;
     }
     
     SDL_RenderCopy(game->renderer, game->overCanvas, NULL,&game->overCanvasRect);
     SDL_RenderCopy(game->renderer, game->overTexture, NULL, &game->overRect);
     SDL_RenderCopy(game->renderer, game->overScore, NULL, &game->overScoreRect);
+    SDL_RenderCopy(game->renderer, game->highScore, NULL, &game->highScoreCanvas);
 }
 
 void gameOver(struct Game* game) {
     SDL_Color color = {217, 242, 94};
-    char over[] = "game over";
     TTF_Font* overFont = TTF_OpenFont("fonts/Returns.ttf", 30);
 
     game->overCanvas = IMG_LoadTexture(game->renderer, "images/game_over/game_over.png");
@@ -35,11 +64,21 @@ void gameOver(struct Game* game) {
     game->overCanvasRect = (SDL_Rect){(SCREEN_WIDTH / 2) - (cW / 2), -cH, cW, cH};
 
     // text
+    if (game->highScore) {
+        SDL_DestroyTexture(game->highScore);
+    }
+    char bestMess[16];
+    sprintf(bestMess, "best score: %u", game->best);
+    game->highScore = renderText(game->renderer, overFont, bestMess, color, &game->highScoreCanvas);
+    game->highScoreCanvas.x = ((SCREEN_WIDTH / 2) - (game->highScoreCanvas.w / 2));
+    game->highScoreCanvas.y = -cH + 450;
+
+
     if (game->overTexture) {
         SDL_DestroyTexture(game->overTexture);
     }
+    char over[] = "game over";
     game->overTexture = renderText(game->renderer, overFont, over, color, &game->overRect);
-
     game->overRect.x = ((SCREEN_WIDTH / 2) - (game->overRect.w / 2));
     game->overRect.y = -cH + 150;
 
@@ -98,6 +137,10 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
     if (bird->canvas.y <= 0) { return false; }
     for (short i = 0; i < count; i++) {
         if (checkCollision(&bird->canvas, &obstacles[i].rectDown) || checkCollision(&bird->canvas, &obstacles[i].rectUp)) {
+            if (game->score > game->best) { 
+                game->best = game->score; 
+                saveHighScore(game);
+            }
             return false;
         }
     }

@@ -4,6 +4,7 @@
 
 void gameLoop() {
     struct Game game = {
+        .file = NULL,
         .window = NULL,
         .renderer = NULL,
         .background = NULL,
@@ -27,7 +28,7 @@ void gameLoop() {
         .pipeTextureDown = NULL,
         .pipeRectUp = {0, 0, 0, 0},
         .pipeRectDown = {0, 0, 0, 0},
-
+        .best = 0,
         .score = 0,
         .scoreFont = NULL,
         .scoreTexture = NULL,
@@ -38,15 +39,22 @@ void gameLoop() {
 
         .overCanvas = NULL,
         .overCanvasRect = (SDL_Rect){0, 0, 0, 0},
-        
+
         .overScore = NULL,
         .overScoreRect = (SDL_Rect){0, 0, 0, 0},
-        .isInit = false,
+        
+        .highScore = NULL,
+        .highScoreCanvas = (SDL_Rect){0, 0, 0, 0},
+        
+        .isInit = false
     };
 
     if (SDL_Initialize(&game)) {
         gameCleanup(&game, EXIT_FAILURE);
     }
+    loadHighScore(&game);
+    Uint32 lastTick = SDL_GetTicks();
+    float deltaTime;
 
     game.scoreFont = TTF_OpenFont("fonts/Returns.ttf", 50);
     
@@ -82,6 +90,11 @@ void gameLoop() {
 
     int xStart = 0, yStart = 0;
     while (true) {
+        
+        Uint32 currentTime = SDL_GetTicks();
+        deltaTime = (currentTime - lastTick) / 1000.0f;
+        lastTick = currentTime;
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
