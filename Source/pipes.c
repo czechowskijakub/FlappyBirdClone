@@ -16,8 +16,6 @@ struct pipePair {
     
     SDL_Texture* pipeUp;
     SDL_Texture* pipeDown;
-
-    bool isPassed;
 };
 
 int scaleHeight(int image_x, int image_y) {
@@ -27,9 +25,8 @@ int scaleHeight(int image_x, int image_y) {
 void buildPipes(struct Game* game, struct pipePair* obstacles, int count) {
 
     for (struct pipePair* it = obstacles; it < obstacles + count; it++) {
-        it->isPassed = false;
-        it->pipeDown = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Up.png");
-        it->pipeUp = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Down.png");
+        it->pipeUp = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Up_2.png");
+        it->pipeDown = IMG_LoadTexture(game->renderer, "images/obstacles/Pipe_Down_2.png");
 
         if (!it->pipeUp || !it->pipeDown) {
             fprintf(stderr, "<< TEXTURE NOT LOADED: %s >>", IMG_GetError());

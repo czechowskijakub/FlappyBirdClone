@@ -1,124 +1,10 @@
 #include "../Headers/play.h"
-#include "../Headers/bird.h"
-#include "../Headers/randomizer.h"
-#include "../Headers/sfx.h"
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #define SCREEN_WIDTH    1920
-#define SCREEN_HEIGHT   1080
-#define PIPE_WIDTH      200
-#define PIPE_HEIGHT     800
-#define START_POS       800
-#define cW              600
-#define cH              600
-
-void loadHighScore(struct Game* game) {
-    game->file = fopen(".highscore.txt", "r");
-    if (game->file == NULL) {
-        game->best = 0;
-        return;
-    }
-
-    if (fscanf(game->file, "%u", &game->best) != 1) {
-        game->best = 0;
-    }
-
-    fclose(game->file);
-}
-
-void saveHighScore(struct Game* game) {
-    game->file = fopen(".highscore.txt", "w");
-    if (game->file == NULL) {
-        printf("Nie można zapisać pliku highscore.txt\n");
-        return;
-    }
-
-    fprintf(game->file, "%u\n", game->best);
-    fclose(game->file);
-}
 
 
-void overDown(struct Game* game) {
-    if (game->overCanvasRect.y < 250 && game->isInit) {
-        game->overCanvasRect.y += 13;
-        game->overRect.y += 13;
-        game->overScoreRect.y += 13;
-        game->highScoreCanvas.y += 13;
-    }
+void playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacles, int count) {
     
-    SDL_RenderCopy(game->renderer, game->overCanvas, NULL,&game->overCanvasRect);
-    SDL_RenderCopy(game->renderer, game->overTexture, NULL, &game->overRect);
-    SDL_RenderCopy(game->renderer, game->overScore, NULL, &game->overScoreRect);
-    SDL_RenderCopy(game->renderer, game->highScore, NULL, &game->highScoreCanvas);
-}
-
-void gameOver(struct Game* game) {
-    SDL_Color color = {217, 242, 94};
-    TTF_Font* overFont = TTF_OpenFont("fonts/Returns.ttf", 30);
-
-    game->overCanvas = IMG_LoadTexture(game->renderer, "images/game_over/game_over.png");
-    if (!game->overCanvas) {
-        printf("<<< ERR UPLOADING TEXTURE: %s >>>", IMG_GetError());
-    }
-    game->overCanvasRect = (SDL_Rect){(SCREEN_WIDTH / 2) - (cW / 2), -cH, cW, cH};
-
-    // text
-    if (game->highScore) {
-        SDL_DestroyTexture(game->highScore);
-    }
-    char bestMess[16];
-    sprintf(bestMess, "best score: %u", game->best);
-    game->highScore = renderText(game->renderer, overFont, bestMess, color, &game->highScoreCanvas);
-    game->highScoreCanvas.x = ((SCREEN_WIDTH / 2) - (game->highScoreCanvas.w / 2));
-    game->highScoreCanvas.y = -cH + 450;
-
-
-    if (game->overTexture) {
-        SDL_DestroyTexture(game->overTexture);
-    }
-    char over[] = "game over";
-    game->overTexture = renderText(game->renderer, overFont, over, color, &game->overRect);
-    game->overRect.x = ((SCREEN_WIDTH / 2) - (game->overRect.w / 2));
-    game->overRect.y = -cH + 150;
-
-    char buffer[16];
-    sprintf(buffer, "score: %d", game->score);
-    game->overScore = renderText(game->renderer, overFont, buffer, color, &game->overScoreRect);
-
-    game->overScoreRect.x = ((SCREEN_WIDTH / 2) - (game->overScoreRect.w / 2));
-    game->overScoreRect.y = -cH + 250;
-
-    game->isInit = true;
-}
-
-void updateScore(struct Game* game) {
-    char buffer[16];
-    sprintf(buffer, "score: %d", game->score);
-
-    if (game->scoreTexture) {
-        SDL_DestroyTexture(game->scoreTexture);
-    }
-    game->scoreTexture = renderText(game->renderer, game->scoreFont, buffer, game->text_color, &game->scoreRect);
-
-    game->scoreRect.x = 40;
-    game->scoreRect.y = 40;
-
-    SDL_RenderCopy(game->renderer, game->scoreTexture, NULL, &game->scoreRect);
-}
-
-bool checkCollision(SDL_Rect* a, SDL_Rect* b) {
-    return (a->x + a->w > b->x &&
-            a->x < b->x + b->w &&
-            a->y + a->h > b->y &&
-            a->y < b->y + b->h
-        );
-}
-
-bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacles, int count, struct Bird* bird, SDL_Event* event) {
-    
-    int scrollSpeed = 8;
+    int scrollSpeed = 5;
     game->text_title.x = -game->text_title.w;
 
     SDL_RenderCopy(game->renderer, maps->gameStart, NULL, &game->rectBackground);
@@ -129,41 +15,21 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
         SDL_RenderCopy(game->renderer, it->pipeDown, NULL, &it->rectDown);
         SDL_RenderCopy(game->renderer, it->pipeUp, NULL, &it->rectUp);  
     }
-
-    SDL_RenderCopy(game->renderer, bird->texture, NULL, &bird->canvas);
-    birdFall(bird);
     
-    // "hitboxes"
-    if (bird->canvas.y + bird->canvas.h >= SCREEN_HEIGHT) { return false; }
-    if (bird->canvas.y <= 0) { return false; }
-    for (short i = 0; i < count; i++) {
-        if (checkCollision(&bird->canvas, &obstacles[i].rectDown) || checkCollision(&bird->canvas, &obstacles[i].rectUp)) {
-            if (game->score > game->best) { 
-                game->best = game->score; 
-                saveHighScore(game);
-            }
-            return false;
-        }
-    }
+    game->rectBackground2.x -= scrollSpeed;
+    game->rectBackground3.x -= scrollSpeed;
 
-    for (short i = 0; i < count; i++) {
-        if (bird->canvas.x + bird->canvas.w >= obstacles[i].rectDown.x + (obstacles[i].rectDown.w / 2) && !obstacles[i].isPassed) {
-            playScoreSFX();
-            game->score++;
-            obstacles[i].isPassed = true;
-        }
-    }
+    obstacles[0].rectDown.x -= scrollSpeed;
+    obstacles[0].rectUp.x -= scrollSpeed;
 
-    game->rectBackground2.x -= scrollSpeed / 2;
-    game->rectBackground3.x -= scrollSpeed / 2;
+    obstacles[1].rectDown.x -= scrollSpeed;
+    obstacles[1].rectUp.x -= scrollSpeed;
 
-    for (struct pipePair* it = obstacles; it < obstacles + count; it++) {
-        it->rectDown.x -= scrollSpeed;
-        it->rectUp.x -= scrollSpeed;
-    }
+    obstacles[2].rectDown.x -= scrollSpeed;
+    obstacles[2].rectUp.x -= scrollSpeed;
 
     if (game->rectBackground.x + game->rectBackground.w >= 0) {
-        game->rectBackground.x -= scrollSpeed / 2;
+        game->rectBackground.x -= scrollSpeed;
     } 
 
     if (game->rectBackground2.x + game->rectBackground2.w <= 0) {
@@ -174,52 +40,14 @@ bool playGame(struct Game* game, struct GameMaps* maps, struct pipePair* obstacl
         game->rectBackground3.x = game->rectBackground2.x + game->rectBackground2.w;
     }
 
-    short spriteOffset = 120;
-    short gap = 800;
-    for (int i = 0; i < count; i++) {
-        if (obstacles[i].rectDown.x + PIPE_WIDTH <= 0) {
-            obstacles[i].isPassed = false;
-            short nextIndex = (i - 1 + count) % count;
-            short nextX = obstacles[nextIndex].rectDown.x + gap;
-
-            short randomHeight = randomNo(600);
-            obstacles[i].rectUp = (SDL_Rect){nextX, (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT + randomHeight - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};
-            obstacles[i].rectDown = (SDL_Rect){nextX, -randomHeight - spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};
-        }
+    if (obstacles[2].rectDown.x + obstacles[0].rectDown.w <= 0) {
+        obstacles[2].rectDown.x = 5/4 * SCREEN_WIDTH;
+        obstacles[2].rectUp.x = 5/4 * SCREEN_WIDTH;
+        
     }
 
-    return true;
-}
-
-void resetGame(struct Game* game, struct pipePair* obstacles, int count, struct Bird* bird) {
-    unsigned xStart = 0, yStart = 0;
-    game->rectBackground = (SDL_Rect){xStart, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-    game->rectBackground2 = (SDL_Rect){game->rectBackground.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-    game->rectBackground3 = (SDL_Rect){game->rectBackground.w + game->rectBackground2.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
-
-    for (short i = 0; i < count; i++) {
-        obstacles[i].isPassed = false;
+    if (obstacles[1].rectDown.x + obstacles[1].rectDown.w <= 0) {
+        obstacles[1].rectDown.x = 5/4 * SCREEN_WIDTH;
+        obstacles[1].rectUp.x = 5/4 * SCREEN_WIDTH;
     }
-    
-    short spriteOffset = 120;
-    obstacles[0].rectUp = (SDL_Rect){(START_POS * 3), (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};      // by subtracting from PIPE_HEIGHT, we push the pipe from the top upwards, so we just offset it up
-    obstacles[0].rectDown = (SDL_Rect){(START_POS * 3), -spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};                                                     // by reversing, we push the pipe from the top downwards, so we just offset it down
-
-    obstacles[1].rectUp = (SDL_Rect){(START_POS * 4), (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT + 400 - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};
-    obstacles[1].rectDown = (SDL_Rect){(START_POS * 4), -400 - spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};
-
-    obstacles[2].rectUp = (SDL_Rect){(START_POS * 5), (SCREEN_HEIGHT - (SCREEN_HEIGHT - PIPE_HEIGHT + 200 - spriteOffset)), PIPE_WIDTH, PIPE_HEIGHT};
-    obstacles[2].rectDown = (SDL_Rect){(START_POS * 5), -200 - spriteOffset, PIPE_WIDTH, PIPE_HEIGHT};
-
-    short spriteWidth = 85;
-    short spriteHeight = 60;
-    bird->canvas.y = (SCREEN_HEIGHT / 2) - spriteHeight;
-    bird->fallSpeed = 1.f;
-    game->score = 0;
-    game->overScoreRect.y = cW + 250;
 }
-
-/*
-to do:
-refactor the code, make it more modular, encapsulate with functions
-*/

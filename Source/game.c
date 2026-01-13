@@ -1,18 +1,9 @@
 #include "../Headers/game.h"
-#include "../Headers/main_menu.h"
-#include "../Headers/pipe.h"
-#include "../Headers/play.h"
-#include "../Headers/renderer.h"
-#include "../Headers/maps.h"
-#include "../Headers/randomizer.h"
-#include "../Headers/bird.h"
-#include "../Headers/sfx.h"
 #define SCREEN_WIDTH    1920
 #define SCREEN_HEIGHT   1080
 
 void gameLoop() {
     struct Game game = {
-        .file = NULL,
         .window = NULL,
         .renderer = NULL,
         .background = NULL,
@@ -29,50 +20,17 @@ void gameLoop() {
         .text_xVel = 3,
         .text_yVel = 3,
 
-        .text_enter = {0, 0, 0, 0},
-        .text_canvas = NULL,
-
         .pipeTextureUp = NULL,
         .pipeTextureDown = NULL,
         .pipeRectUp = {0, 0, 0, 0},
         .pipeRectDown = {0, 0, 0, 0},
-        .best = 0,
-        .score = 0,
-        .scoreFont = NULL,
-        .scoreTexture = NULL,
-        .scoreRect = (SDL_Rect){20, 20, 0, 0},
-
-        .overTexture = NULL,
-        .overRect = (SDL_Rect){0, 0, 0, 0},
-
-        .overCanvas = NULL,
-        .overCanvasRect = (SDL_Rect){0, 0, 0, 0},
-
-        .overScore = NULL,
-        .overScoreRect = (SDL_Rect){0, 0, 0, 0},
-        
-        .highScore = NULL,
-        .highScoreCanvas = (SDL_Rect){0, 0, 0, 0},
-        
-        .isInit = false
     };
 
     if (SDL_Initialize(&game)) {
         gameCleanup(&game, EXIT_FAILURE);
     }
-
-    if (initAudio()) {
-        quitAudio();
-    }
-
-    playBGMusic();
-
-    loadHighScore(&game);
-    Uint32 lastTick = SDL_GetTicks();
-    float deltaTime;
-
-    game.scoreFont = TTF_OpenFont("fonts/Returns.ttf", 50);
     
+    // instantiate one window and renderer; so we can easily swap backgrounds
     loadWindow(&game);
     loadRenderer(&game);
 
@@ -80,8 +38,8 @@ void gameLoop() {
         maps.gameMenu = loadBackground(&game, "maps/BG_Flappy_Start.png"),
         maps.gameStart = loadBackground(&game, "maps/BG_Flappy_Start.png"),
         maps.gameLoop = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
+        maps.gameLoop2 = loadBackground(&game, "maps/BG_Flappy_Loop.png"),
     };
-
     int count = 3;
     struct pipePair obstacles[count];
     buildPipes(&game, obstacles, count);
@@ -89,28 +47,24 @@ void gameLoop() {
     game.background = maps.gameMenu;
     game.displayRect = (SDL_Rect){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
-    if (loadFontAndText(&game, "Flappy Burd", game.text_color, 50, (SCREEN_WIDTH / 2), 100)) {
-        gameCleanup(&game, EXIT_FAILURE);
-    }
+    int xStart = 0, yStart = 0;
+    game.rectBackground = (SDL_Rect){xStart, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
+    game.rectBackground2 = (SDL_Rect){game.rectBackground.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
+    game.rectBackground3 = (SDL_Rect){game.rectBackground.w + game.rectBackground2.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
 
-    if (loadInstructions(&game, "press enter", game.text_color, 15, (SCREEN_WIDTH / 2), (SCREEN_HEIGHT - 400))) {
+    if (loadFontAndText(&game, "Floppy Burd", game.text_color, 50)) {
         gameCleanup(&game, EXIT_FAILURE);
     }
 
     static enum GameState currentState = STATE_MAIN_MENU;
-    struct Bird bird;
-    buildBird(&game, &bird);
 
-    resetGame(&game, obstacles, count, &bird);
-
-    int xStart = 0, yStart = 0;
     while (true) {
-        
-        Uint32 currentTime = SDL_GetTicks();
-        deltaTime = (currentTime - lastTick) / 1000.0f;
-        lastTick = currentTime;
-
         SDL_Event event;
+        
+        Uint8 r = randomNo();
+        Uint8 g = randomNo();
+        Uint8 b = randomNo();
+
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
@@ -118,20 +72,19 @@ void gameLoop() {
                 break;
             case SDL_KEYDOWN:
                 switch (event.key.keysym.scancode) {
-                case SDL_SCANCODE_RETURN:
-                    if (currentState == STATE_MAIN_MENU) {
-                        currentState = STATE_PLAYING;
-                    } else if (currentState == STATE_GAME_OVER) {
-                        resetGame(&game, obstacles, count, &bird);
-                        gameOver(&game);
-                        currentState = STATE_PLAYING;
-                    }
+                case SDL_SCANCODE_B:
+                    currentState = STATE_PLAYING;
+                    break;
+                case SDL_SCANCODE_C:
+                    currentState = STATE_MAIN_MENU;
+                    game.rectBackground = (SDL_Rect){xStart, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
+                    game.rectBackground2 = (SDL_Rect){game.rectBackground.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
+                    game.rectBackground3 = (SDL_Rect){game.rectBackground.w + game.rectBackground2.w, yStart, SCREEN_WIDTH, SCREEN_HEIGHT};
                     break;
                 case SDL_SCANCODE_ESCAPE:
                     gameCleanup(&game, EXIT_SUCCESS);
                     break;
                 case SDL_SCANCODE_SPACE:
-                    birdJump(&bird);
                     break;
                 default:
                     break;
@@ -142,23 +95,17 @@ void gameLoop() {
         }
 
         SDL_RenderClear(game.renderer);
+
         SDL_RenderCopy(game.renderer, game.background, NULL, NULL);
 
         if (currentState == STATE_MAIN_MENU) {
+            game.text_title.x = (SCREEN_WIDTH - game.text_title.w) / 2;
             displayMainMenu(&game);
-            resetGame(&game, obstacles, count, &bird);
+            
         }
         
         if (currentState == STATE_PLAYING) {
-            if (!playGame(&game, &maps, obstacles, count, &bird, &event)) {
-                gameOver(&game);
-                currentState = STATE_GAME_OVER;
-            }
-            updateScore(&game);
-        }
-
-        if (currentState == STATE_GAME_OVER) {
-            overDown(&game);
+            playGame(&game, &maps, obstacles, count);
         }
 
         SDL_RenderCopy(game.renderer, game.text_image, NULL, &game.text_title);
@@ -167,5 +114,4 @@ void gameLoop() {
 
         SDL_Delay(16);
     }
-    quitAudio();
 }

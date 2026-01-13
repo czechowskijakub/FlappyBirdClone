@@ -68,7 +68,7 @@ SDL_Texture* loadBackground(struct Game* game, const char* imageTitle) {
     return background;
 }
 
-bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y) {
+bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize) {
     game->textFont = TTF_OpenFont("fonts/Returns.ttf", textSize);
     if (!game->textFont) {
         fprintf(stderr, "<< FONT DID NOT LOAD PROPERLY: %s >>\n", TTF_GetError());
@@ -85,8 +85,7 @@ bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int t
     game->text_title.h = surface->h;
     game->text_image = SDL_CreateTextureFromSurface(game->renderer, surface);
     SDL_FreeSurface(surface);
-    game->text_title.x = x - game->text_title.w / 2;
-    game->text_title.y = y;
+    game->text_title.x = (SCREEN_WIDTH - game->text_title.w) / 2;
 
     if (!game->text_image) {
         fprintf(stderr, "<< TEXT IMAGE DID NOT LOAD PROPERLY: %s >>.\n", SDL_GetError());
@@ -94,53 +93,4 @@ bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int t
     }
 
     return false;
-}
-
-bool loadInstructions(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y) {
-    game->textFont = TTF_OpenFont("fonts/Returns.ttf", textSize);
-    if (!game->textFont) {
-        fprintf(stderr, "<< FONT DID NOT LOAD PROPERLY: %s >>\n", TTF_GetError());
-        return true;
-    }
-
-    SDL_Surface* surface = TTF_RenderText_Blended(game->textFont, text, color);
-    if (!surface) {
-        fprintf(stderr, "<< SURFACE DID NOT LOAD PROPERLY: %s >>\n", SDL_GetError());
-        return true;
-    }
-
-    game->text_enter.w = surface->w;
-    game->text_enter.h = surface->h;
-    game->text_canvas = SDL_CreateTextureFromSurface(game->renderer, surface);
-    SDL_FreeSurface(surface);
-    game->text_enter.x = x - game->text_enter.w / 2;
-    game->text_enter.y = y;
-
-    if (!game->text_canvas) {
-        fprintf(stderr, "<< TEXT IMAGE DID NOT LOAD PROPERLY: %s >>.\n", SDL_GetError());
-        return true;
-    }
-
-    return false;
-}
-
-SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, SDL_Rect* rectOut) {
-    SDL_Surface* surface = TTF_RenderText_Blended(font, text, color);
-     if (!surface) {
-        fprintf(stderr, "<< SURFACE ERROR: %s >>\n", TTF_GetError());
-        return NULL;
-    }
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (!texture) {
-        fprintf(stderr, "<< TEXTURE ERROR: %s >>\n", SDL_GetError());
-        SDL_FreeSurface(surface);
-        return NULL;
-    }
-
-    rectOut->w = surface->w;
-    rectOut->h = surface->h;
-
-    SDL_FreeSurface(surface);
-    return texture;
 }

@@ -10,7 +10,6 @@
 #include <time.h>
 
 struct Game {
-    FILE* file;
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* background;
@@ -19,12 +18,8 @@ struct Game {
     SDL_Color text_color;
     SDL_Rect text_title;
     SDL_Texture* text_image;
-    
     int text_xVel;
     int text_yVel;
-
-    SDL_Rect text_enter;
-    SDL_Texture* text_canvas;
 
     SDL_Rect rectBackground;
     SDL_Rect rectBackground2;
@@ -36,33 +31,13 @@ struct Game {
     SDL_Rect pipeRectUp;
     SDL_Rect pipeRectDown;
 
-    unsigned score;
-    unsigned best;
-    TTF_Font* scoreFont;
-    SDL_Texture* scoreTexture;
-    SDL_Rect scoreRect;
-
-    SDL_Texture* overTexture;
-    SDL_Rect overRect;
-
-    SDL_Texture* overCanvas;
-    SDL_Rect overCanvasRect;
-    SDL_Texture* overScore;
-    SDL_Rect overScoreRect;
-
-    SDL_Texture* highScore;
-    SDL_Rect highScoreCanvas;
-
-    bool isInit;
 };
 
 bool SDL_Initialize(struct Game* game);
 SDL_Window* loadWindow(struct Game* game);
 SDL_Renderer* loadRenderer(struct Game* game);
 SDL_Texture* loadBackground(struct Game* game, const char* imageTitle);
-bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y);
+bool loadFontAndText(struct Game* game, const char* text, SDL_Color color, int textSize);
 void gameCleanup(struct Game* game, int exitStatus);
-bool loadInstructions(struct Game* game, const char* text, SDL_Color color, int textSize, int x, int y);
-SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, SDL_Rect* rectOut);
 
 #endif

@@ -8,8 +8,6 @@ struct pipePair {
     
     SDL_Texture* pipeUp;
     SDL_Texture* pipeDown;
-
-    bool isPassed;
 };
 
 
