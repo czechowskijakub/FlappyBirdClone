@@ -25,7 +25,7 @@ The player controls the bird to avoid obstacles and score points.
 
 - **C compiler** (e.g., `gcc`)  
 - **SDL2** library installed  
-
+- ucrt64 launch: gcc Source/*.c -o main.exe \$(pkg-config --cflags --libs sdl2 SDL2_image SDL2_mixer SDL2_ttf SDL2_net)
 
 ## Controls
 
